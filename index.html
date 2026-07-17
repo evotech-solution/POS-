@@ -304,3 +304,1287 @@ nav.bottomnav{
 
 /* ---------- Ripple ---------- */
 .ripple{position:absolute; border-radius:50%; background:rgba(0,0,0,.12); transform:scale(0); animation:rip .5s ease-out; pointer-events:none;}
+@keyframes rip{to{transform:scale(2.6); opacity:0;}}
+
+/* ---------- Install banner ---------- */
+#install-banner{
+  position:absolute; left:12px; right:12px; bottom:calc(78px + var(--safe-bottom)); z-index:41; background:var(--surface-3);
+  border:1px solid var(--border); border-radius:16px; padding:10px 12px; display:none; align-items:center; gap:10px; box-shadow:var(--shadow-1);
+}
+#install-banner.show{display:flex;}
+#install-banner button{background:var(--accent); color:var(--accent-ink); border:none; border-radius:10px; padding:8px 12px; font-weight:700; font-size:12px; cursor:pointer;}
+#install-banner .ib-txt{flex:1; font-size:12px; font-weight:600;}
+#install-banner .ib-close{background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer;}
+
+/* ---------- License gate ---------- */
+#license-screen{
+  position:fixed; inset:0; z-index:200; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:28px 24px calc(28px + var(--safe-bottom)); text-align:center;
+}
+#license-screen .lic-mark{
+  width:64px; height:64px; border-radius:20px; background:var(--accent); color:var(--accent-ink);
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-ui); font-weight:800; font-size:28px;
+  box-shadow:var(--shadow-1); margin-bottom:14px;
+}
+#license-screen h1{font-family:var(--font-ui); font-size:19px; margin:0 0 4px;}
+#license-screen .lic-sub{font-size:12.5px; color:var(--muted); margin:0 0 26px; max-width:280px; line-height:1.5;}
+#license-screen .lic-card{width:100%; max-width:320px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-2); padding:20px; text-align:left;}
+#license-screen .field{margin-bottom:12px;}
+#license-screen .lic-err{font-size:11.5px; color:var(--danger); min-height:14px; margin:-4px 0 10px;}
+#license-screen .lic-expired{font-size:11.5px; color:var(--danger); background:rgba(214,58,87,.1); border-radius:10px; padding:8px 10px; margin-bottom:14px;}
+#license-screen .lic-ok{font-size:11.5px; color:var(--accent); background:var(--accent-ink); border-radius:10px; padding:8px 10px; margin-bottom:14px;}
+#license-screen .lic-foot{font-size:10.5px; color:var(--muted-2); margin-top:18px;}
+
+@media(min-width:480px){.brand-name{display:block;}}
+</style>
+</head>
+<body>
+
+<!-- ============ LICENSE GATE ============ -->
+<div id="license-screen" class="hidden">
+  <div class="lic-mark">D</div>
+  <h1>D POS</h1>
+  <p class="lic-sub">Enter your license key to activate this device.</p>
+  <div class="lic-card">
+    <div id="lic-expired-note" class="lic-expired hidden"></div>
+    <div id="lic-step-key">
+      <div class="field"><label>License Key</label><input id="lic-key-input" placeholder="16-character license key" autocomplete="off" autocapitalize="characters" maxlength="19"></div>
+      <div class="lic-err" id="lic-key-err"></div>
+      <button class="btn-primary" id="lic-activate-btn" style="width:100%;">Activate</button>
+    </div>
+    <div id="lic-step-expiry" class="hidden">
+      <div class="lic-ok">✓ License key accepted</div>
+      <div class="field"><label>Set Expiry Date</label><input id="lic-expiry-input" type="date"></div>
+      <div class="lic-err" id="lic-expiry-err"></div>
+      <button class="btn-primary" id="lic-confirm-btn" style="width:100%;">Confirm & Start</button>
+    </div>
+  </div>
+  <p class="lic-foot">Locked to this browser · Contact your provider for a license key</p>
+</div>
+
+<div id="app" class="hidden">
+
+  <!-- ============ HOME SCREEN ============ -->
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand"><div class="brand-mark">D</div><span class="brand-name" id="store-name-label">D POS</span></div>
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="search-input" type="text" placeholder="Search name, SKU, barcode…" autocomplete="off">
+      </div>
+      <button class="icon-btn" id="btn-settings-top" aria-label="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.13.47.43.86.83 1.09.28.16.6.25.94.25H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="chips-row" id="category-chips"></div>
+  <div class="sort-row">
+    <span class="count" id="result-count">— products</span>
+    <select class="sort-select" id="sort-select">
+      <option value="recent">Recently Added</option>
+      <option value="name">Name A–Z</option>
+      <option value="price_asc">Price: Low–High</option>
+      <option value="price_desc">Price: High–Low</option>
+    </select>
+  </div>
+
+  <main class="content" id="home-view">
+    <div class="product-list" id="product-grid"></div>
+    <div class="empty-state hidden" id="empty-state"><div class="emoji">🔍</div><div>No products match your search.</div></div>
+  </main>
+
+  <!-- ============ HISTORY VIEW ============ -->
+  <main class="content hidden" id="history-view">
+    <div id="history-list"></div>
+  </main>
+
+  <!-- Cart summary bar -->
+  <div class="cart-bar" id="cart-bar">
+    <div class="cart-icon-wrap">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20.5" r="1.4" fill="currentColor"/><circle cx="17.5" cy="20.5" r="1.4" fill="currentColor"/></svg>
+      <span class="cart-count" id="cart-count">0</span>
+    </div>
+    <div class="cart-mid"><div class="label" id="cart-label">0 items</div><div class="amount mono" id="cart-amount">$0.00</div></div>
+    <button class="checkout-pill" id="btn-open-cart">View Cart →</button>
+  </div>
+
+  <div id="install-banner"><span class="ib-txt">Install D POS for full offline access</span><button id="btn-install">Install</button><button class="ib-close" id="btn-install-dismiss">✕</button></div>
+
+  <!-- Bottom nav -->
+  <nav class="bottomnav">
+    <button class="nav-btn active" data-tab="home" id="nav-home">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 11.5 12 4l9 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Home
+    </button>
+    <button class="nav-scan" id="nav-scan" aria-label="Scan barcode">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 8V5a2 2 0 0 1 2-2h3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="6" y1="12" x2="18" y2="12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+    <button class="nav-btn" data-tab="history" id="nav-history">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      History
+    </button>
+    <button class="nav-btn" data-tab="settings" id="nav-settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82 2 2 0 1 1-2.83 2.83A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33 2 2 0 1 1-2.83-2.83A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 2 2 0 1 1 2.83-2.83A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33 2 2 0 1 1 2.83 2.83A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.5"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <!-- ============ OVERLAY (shared backdrop) ============ -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ============ CART SHEET ============ -->
+  <div class="sheet" id="sheet-cart" style="max-height:92vh;">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><h2>Your Cart</h2><button class="sheet-close" data-close-sheet="sheet-cart">✕</button></div>
+    <div class="sheet-body" id="cart-list"></div>
+    <div class="sheet-foot">
+      <div class="summary-row"><span>Subtotal</span><span class="val" id="sum-subtotal">$0.00</span></div>
+      <div class="summary-row"><span>Discount</span><span class="val" id="sum-discount">$0.00</span></div>
+      <div class="summary-row"><span>Tax (<span id="sum-tax-pct">0</span>%)</span><span class="val" id="sum-tax">$0.00</span></div>
+      <div class="summary-row total"><span>Total</span><span class="val" id="sum-total">$0.00</span></div>
+      <button class="btn-primary" id="btn-checkout">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- ============ CHECKOUT MODAL ============ -->
+  <div class="modal-center-wrap" id="modal-checkout">
+    <div class="modal-card">
+      <div class="sheet-head"><h2>Checkout</h2><button class="sheet-close" data-close-modal="modal-checkout">✕</button></div>
+      <div class="sheet-body">
+        <div class="field"><label>Customer Name (optional)</label><input id="cust-name" placeholder="Walk-in Customer"></div>
+        <div class="field"><label>Phone Number (optional)</label><input id="cust-phone" placeholder="+1 555 000 0000" inputmode="tel"></div>
+        <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;">Payment Method</label>
+        <div class="pay-grid" id="pay-grid"></div>
+        <div class="field hidden" id="cash-field"><label>Amount Tendered</label><input id="cash-amount" type="number" inputmode="decimal" placeholder="0.00"></div>
+        <div class="summary-row" id="change-row" style="display:none;"><span>Change Due</span><span class="val" id="change-val">$0.00</span></div>
+        <div class="field"><label>Order Notes (optional)</label><textarea id="order-notes" rows="2" placeholder="e.g. gift wrap"></textarea></div>
+        <div class="summary-row total"><span>Total Due</span><span class="val" id="checkout-total">$0.00</span></div>
+      </div>
+      <div class="sheet-foot"><button class="btn-primary" id="btn-complete-sale">Complete Sale</button></div>
+    </div>
+  </div>
+
+  <!-- ============ RECEIPT MODAL ============ -->
+  <div class="modal-center-wrap" id="modal-receipt">
+    <div class="modal-card" style="max-width:340px;">
+      <div class="sheet-head"><h2>Receipt</h2><button class="sheet-close" data-close-modal="modal-receipt">✕</button></div>
+      <div id="receipt-scroll">
+        <div id="receipt-print-area"></div>
+      </div>
+      <div class="receipt-actions" style="margin-bottom:12px;">
+        <button id="btn-print"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z" stroke="currentColor" stroke-width="1.8"/></svg> Print</button>
+        <button id="btn-share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" stroke="currentColor" stroke-width="1.8"/></svg> Share</button>
+        <button id="btn-pdf"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.8"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8"/></svg> PDF</button>
+        <button id="btn-new-sale"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> New Sale</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS SHEET ============ -->
+  <div class="sheet" id="sheet-settings" style="max-height:92vh;">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><h2>Settings</h2><button class="sheet-close" data-close-sheet="sheet-settings">✕</button></div>
+    <div class="sheet-body">
+      <div class="field"><label>Store Name</label><input id="set-store-name"></div>
+      <div class="field"><label>Currency Symbol</label><input id="set-currency" maxlength="3"></div>
+      <div class="field"><label>Tax Rate (%)</label><input id="set-tax" type="number" inputmode="decimal"></div>
+      <div class="field"><label>Receipt Width</label>
+        <div class="seg-control"><div class="seg-btn" data-width="58mm">58mm</div><div class="seg-btn" data-width="80mm">80mm</div></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+      <div class="field"><label>License</label>
+        <div id="settings-license-box" style="background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:12px 14px; font-size:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--muted);">Key</span><span id="lic-set-key" class="mono"></span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:var(--muted);">Expires</span><span id="lic-set-expiry"></span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Time left</span><span id="lic-set-countdown" style="font-weight:700;color:var(--accent);"></span></div>
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+      <button class="btn-secondary" id="btn-backup">⬇ Backup Data (Export JSON)</button>
+      <button class="btn-secondary" id="btn-restore">⬆ Restore Data (Import JSON)</button>
+      <input type="file" id="restore-file" accept="application/json" class="hidden">
+      <button class="btn-secondary btn-danger-ghost" id="btn-clear-sales">🗑 Clear Sales History</button>
+      <button class="btn-secondary btn-danger-ghost" id="btn-reset-app">⚠ Reset App (Erase Everything)</button>
+      <p style="font-size:11px;color:var(--muted-2);line-height:1.6;margin-top:18px;">
+        D POS v1.0 · Runs entirely on-device — no backend, no account. The product catalog loads from
+        products.json next to this file; store settings, sales history, and your license are stored locally
+        in this browser as JSON, kept lean so the largest possible amount of sales history can be saved.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ SCANNER MODAL (half-screen camera + scanned items) ============ -->
+  <div id="scanner-modal" class="hidden">
+    <div class="scanner-cam">
+      <div class="flash-ok" id="scan-flash"></div>
+      <video id="scanner-video" autoplay playsinline muted></video>
+      <div class="scan-frame"></div>
+      <div class="scanner-top">
+        <button class="icon-btn" id="btn-scanner-close" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.25);color:#fff;">✕</button>
+        <button class="icon-btn" id="btn-scanner-manual" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.25);color:#fff;font-size:11px;">⌨</button>
+      </div>
+      <div class="scanner-bottom">
+        <div class="scanner-msg" id="scanner-status">Point camera at a barcode</div>
+      </div>
+    </div>
+    <div class="scanner-items">
+      <h3>Scanned items</h3>
+      <div id="scanned-list"></div>
+    </div>
+  </div>
+
+  <div id="toast-stack"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ==========================================================================
+   MODULE: Utils
+   ========================================================================== */
+const Utils = {
+  uid(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); },
+  money(n, symbol){ return (symbol||'$') + (Math.round((n+Number.EPSILON)*100)/100).toFixed(2); },
+  clamp(n,min,max){ return Math.max(min, Math.min(max, n)); },
+  debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; },
+  escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  todayStr(){ return new Date().toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); },
+  timeStr(d){ return new Date(d).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}); },
+  hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h<<5)-h+s.charCodeAt(i); h|=0; } return Math.abs(h); },
+  vibrate(ms){ if(navigator.vibrate){ try{ navigator.vibrate(ms); }catch(e){} } },
+  ripple(e, el){
+    const r = document.createElement('span'); r.className='ripple';
+    const rect = el.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = (e.clientX ?? (rect.left+rect.width/2)) - rect.left - size/2;
+    const y = (e.clientY ?? (rect.top+rect.height/2)) - rect.top - size/2;
+    r.style.width = r.style.height = size+'px'; r.style.left = x+'px'; r.style.top = y+'px';
+    el.style.position = el.style.position || 'relative'; el.style.overflow='hidden';
+    el.appendChild(r); setTimeout(()=>r.remove(), 520);
+  }
+};
+document.addEventListener('pointerdown', (e)=>{
+  const el = e.target.closest('.icon-btn,.chip,.btn-primary,.btn-secondary,.checkout-pill,.pay-opt,.nav-btn,.nav-scan,.qty-btn,.seg-btn');
+  if(el) Utils.ripple(e, el);
+});
+
+/* ==========================================================================
+   MODULE: SoundFX (WebAudio, no network assets needed)
+   ========================================================================== */
+const SoundFX = {
+  ctx: null,
+  get audioCtx(){ if(!this.ctx){ const AC = window.AudioContext||window.webkitAudioContext; if(AC) this.ctx = new AC(); } return this.ctx; },
+  beep(freq=880, dur=0.09, vol=0.18){
+    const ctx = this.audioCtx; if(!ctx) return;
+    if(ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.type='sine'; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime+dur);
+  },
+  scanSuccess(){ this.beep(1046,0.07,0.2); setTimeout(()=>this.beep(1568,0.09,0.2),80); },
+  addToCart(){ this.beep(660,0.06,0.14); },
+  success(){ this.beep(784,0.09,0.18); setTimeout(()=>this.beep(1046,0.12,0.18),100); setTimeout(()=>this.beep(1318,0.14,0.18),220); },
+  error(){ this.beep(220,0.18,0.16); }
+};
+
+/* ==========================================================================
+   MODULE: Toast
+   ========================================================================== */
+const Toast = {
+  stack: null,
+  init(){ this.stack = document.getElementById('toast-stack'); },
+  show(msg, type='default', icon){
+    if(!this.stack) this.init();
+    const icons = {success:'✅', error:'⚠️', info:'ℹ️', cart:'🛒', print:'🖨️', offline:'📴', scan:'📷', default:'🔔'};
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.innerHTML = `<span class="t-ic">${icon || icons[type] || icons.default}</span><span class="t-txt">${Utils.escapeHtml(msg)}</span>`;
+    this.stack.appendChild(el);
+    requestAnimationFrame(()=> el.classList.add('show'));
+    setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(), 320); }, 2600);
+  }
+};
+
+/* ==========================================================================
+   MODULE: DB  (plain JSON storage in localStorage — one JSON blob per store:
+   products, sales/history, and meta which holds the store's own settings,
+   cart and invoice counter. No IndexedDB, no backend — just JSON files.)
+   ========================================================================== */
+const DB = {
+  stores: ['products','sales','meta'],
+  async init(){ /* nothing to open — localStorage is available synchronously */ },
+  async getAll(store){ return JSON.parse(localStorage.getItem('lp_'+store)||'[]'); },
+  async put(store, value){
+    const arr = JSON.parse(localStorage.getItem('lp_'+store)||'[]');
+    const idx = arr.findIndex(x=>x.id===value.id || x.key===value.key);
+    if(idx>=0) arr[idx]=value; else arr.push(value);
+    localStorage.setItem('lp_'+store, JSON.stringify(arr));
+  },
+  async bulkPut(store, values){ localStorage.setItem('lp_'+store, JSON.stringify(values)); },
+  async delete(store, key){
+    let arr = JSON.parse(localStorage.getItem('lp_'+store)||'[]');
+    arr = arr.filter(x=>x.id!==key && x.key!==key);
+    localStorage.setItem('lp_'+store, JSON.stringify(arr));
+  },
+  async clear(store){ localStorage.setItem('lp_'+store, '[]'); },
+  async getMeta(key, fallback){
+    const all = await this.getAll('meta');
+    const found = all.find(m=>m.key===key);
+    return found ? found.value : fallback;
+  },
+  async setMeta(key, value){ await this.put('meta', {key, value}); }
+};
+
+/* ==========================================================================
+   MODULE: License (static, locally-verified — no server involved). Two keys:
+   an ORIGINAL key (16-character hash-style code) whose expiry date is picked
+   manually at activation, and a DEMO key whose validity is set automatically
+   to a fixed number of hours after activation. Validity is re-checked in the
+   background for as long as the app is open, plus once on every boot.
+   ========================================================================== */
+const License = {
+  // Edit these to issue new keys. Both are 16-character hash-style codes.
+  ORIGINAL_KEY: '8F3D2A9C7E1B4066',
+  DEMO_KEY: '2C7A0F94D8B3E651',
+  DEMO_HOURS: 12,
+
+  checkTimer: null,
+  data: null, // {key, kind:'original'|'demo', expiryTs, activatedAt}
+
+  normalize(k){ return (k||'').trim().toUpperCase().replace(/[\s-]/g,''); },
+  keyKind(k){
+    const n = this.normalize(k);
+    if(n === this.ORIGINAL_KEY) return 'original';
+    if(n === this.DEMO_KEY) return 'demo';
+    return null;
+  },
+
+  async load(){ this.data = await DB.getMeta('license', null); return this.data; },
+
+  isActive(){
+    if(!this.data || !this.data.expiryTs) return false;
+    return Date.now() <= this.data.expiryTs;
+  },
+  remaining(){
+    if(!this.data || !this.data.expiryTs) return null;
+    const ms = this.data.expiryTs - Date.now();
+    if(ms<=0) return {expired:true, days:0, hours:0, minutes:0};
+    return {
+      expired:false,
+      days: Math.floor(ms/86400000),
+      hours: Math.floor((ms%86400000)/3600000),
+      minutes: Math.floor((ms%3600000)/60000)
+    };
+  },
+  formatExpiry(){
+    if(!this.data || !this.data.expiryTs) return '';
+    return new Date(this.data.expiryTs).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'});
+  },
+  async activate(key, kind, expiryTs){
+    this.data = {key:this.normalize(key), kind, expiryTs, activatedAt:Date.now()};
+    await DB.setMeta('license', this.data);
+  },
+
+  showScreen(expiredMsg){
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('license-screen').classList.remove('hidden');
+    document.getElementById('lic-step-key').classList.remove('hidden');
+    document.getElementById('lic-step-expiry').classList.add('hidden');
+    document.getElementById('lic-key-input').value = '';
+    document.getElementById('lic-key-err').textContent = '';
+    document.getElementById('lic-expiry-err').textContent = '';
+    const note = document.getElementById('lic-expired-note');
+    if(expiredMsg){ note.textContent = expiredMsg; note.classList.remove('hidden'); }
+    else { note.classList.add('hidden'); }
+  },
+  hideScreen(){
+    document.getElementById('license-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+  },
+
+  wireScreenEvents(onActivated){
+    let pendingKey = '';
+    document.getElementById('lic-activate-btn').onclick = async ()=>{
+      const val = document.getElementById('lic-key-input').value;
+      const kind = this.keyKind(val);
+      if(!kind){
+        document.getElementById('lic-key-err').textContent = 'Invalid license key. Please check and try again.';
+        return;
+      }
+      document.getElementById('lic-key-err').textContent = '';
+      pendingKey = val;
+      if(kind === 'demo'){
+        // Demo key: validity is fixed automatically — no date picker needed.
+        const expiryTs = Date.now() + this.DEMO_HOURS*3600000;
+        await this.activate(pendingKey, 'demo', expiryTs);
+        this.hideScreen();
+        this.startBackgroundCheck();
+        Toast.show(`Demo activated — valid for ${this.DEMO_HOURS} hours`, 'success');
+        if(onActivated) onActivated();
+        return;
+      }
+      // Original key: user picks an expiry date.
+      document.getElementById('lic-step-key').classList.add('hidden');
+      document.getElementById('lic-step-expiry').classList.remove('hidden');
+      const dInput = document.getElementById('lic-expiry-input');
+      dInput.min = new Date(Date.now()+86400000).toISOString().slice(0,10);
+      dInput.value = '';
+    };
+    document.getElementById('lic-confirm-btn').onclick = async ()=>{
+      const dateVal = document.getElementById('lic-expiry-input').value;
+      if(!dateVal){ document.getElementById('lic-expiry-err').textContent = 'Please select an expiry date.'; return; }
+      const expiryTs = new Date(dateVal+'T23:59:59').getTime();
+      if(expiryTs <= Date.now()){
+        document.getElementById('lic-expiry-err').textContent = 'Expiry date must be in the future.';
+        return;
+      }
+      document.getElementById('lic-expiry-err').textContent = '';
+      await this.activate(pendingKey, 'original', expiryTs);
+      this.hideScreen();
+      this.startBackgroundCheck();
+      if(onActivated) onActivated();
+    };
+  },
+
+  startBackgroundCheck(){
+    if(this.checkTimer) clearInterval(this.checkTimer);
+    this.updateSettingsDisplay();
+    const interval = (this.data && this.data.kind === 'demo') ? 15000 : 30000;
+    this.checkTimer = setInterval(()=>{
+      this.updateSettingsDisplay();
+      if(!this.isActive()){
+        clearInterval(this.checkTimer);
+        this.showScreen(`Your license expired on ${this.formatExpiry()}. Enter a license key to continue.`);
+        this.wireScreenEvents(()=>{});
+      }
+    }, interval);
+  },
+
+  updateSettingsDisplay(){
+    const keyEl = document.getElementById('lic-set-key');
+    if(!keyEl || !this.data) return;
+    document.getElementById('lic-set-expiry').textContent = this.formatExpiry();
+    keyEl.textContent = (this.data.kind==='demo' ? 'DEMO · ' : '') + this.data.key;
+    const cdEl = document.getElementById('lic-set-countdown');
+    const r = this.remaining();
+    if(!r || r.expired){ cdEl.textContent = 'Expired'; cdEl.style.color = 'var(--danger)'; }
+    else { cdEl.textContent = `${r.days}d ${r.hours}h ${r.minutes}m`; cdEl.style.color = 'var(--accent)'; }
+  },
+
+  // Blocks (via the license screen) until a valid, active license is in place.
+  async gate(){
+    await this.load();
+    return new Promise(resolve=>{
+      if(this.isActive()){
+        this.hideScreen();
+        this.startBackgroundCheck();
+        resolve();
+        return;
+      }
+      const msg = (this.data && this.data.expiryTs) ? `Your license expired on ${this.formatExpiry()}. Enter a license key to continue.` : null;
+      this.showScreen(msg);
+      this.wireScreenEvents(()=>resolve());
+    });
+  }
+};
+
+/* ==========================================================================
+   MODULE: Catalog (100 demo products, generated deterministically)
+   ========================================================================== */
+const Catalog = {
+  categories: [
+    {id:'beverages', label:'Beverages', emoji:'🥤', color:'2563EB'},
+    {id:'snacks', label:'Snacks', emoji:'🍪', color:'D97706'},
+    {id:'bakery', label:'Bakery', emoji:'🥐', color:'B45309'},
+    {id:'dairy', label:'Dairy', emoji:'🥛', color:'0EA5E9'},
+    {id:'produce', label:'Produce', emoji:'🥦', color:'16A34A'},
+    {id:'grocery', label:'Grocery', emoji:'🛒', color:'7C3AED'},
+    {id:'household', label:'Household', emoji:'🧴', color:'0D9488'},
+    {id:'personal', label:'Personal Care', emoji:'🧼', color:'DB2777'},
+    {id:'electronics', label:'Electronics', emoji:'🔌', color:'475569'},
+    {id:'stationery', label:'Stationery', emoji:'✏️', color:'CA8A04'}
+  ],
+  names: {
+    beverages:['Cola Can','Orange Juice 1L','Mineral Water','Energy Drink','Iced Tea Bottle','Lemonade 500ml','Sparkling Water','Apple Juice Carton','Instant Coffee Jar','Milkshake Bottle'],
+    snacks:['Potato Chips','Cheese Crackers','Popcorn Bag','Salted Pretzels','Trail Mix Pack','Choc Chip Cookies','Granola Bar','Corn Chips','Roasted Peanuts','Rice Cakes'],
+    bakery:['White Bread Loaf','Whole Wheat Bread','Butter Croissant','Sesame Bagel','Blueberry Muffin','Glazed Donut','French Baguette','Cinnamon Roll','Dinner Rolls (6)','Sourdough Loaf'],
+    dairy:['Whole Milk 1L','Skim Milk 1L','Greek Yogurt Cup','Cheddar Cheese Block','Salted Butter','Cream Cheese Tub','Sour Cream','Mozzarella Ball','Fruit Yogurt Cup','Cottage Cheese'],
+    produce:['Bananas (bunch)','Red Apples (kg)','Fresh Tomatoes (kg)','Yellow Onions (kg)','Potatoes (kg)','Carrots (kg)','Iceberg Lettuce','Cucumbers (kg)','Navel Oranges (kg)','Seedless Grapes'],
+    grocery:['Basmati Rice 5kg','Spaghetti Pack','Sunflower Oil 1L','Granulated Sugar 1kg','All-Purpose Flour 1kg','Canned Black Beans','Tomato Sauce Jar','Corn Flakes Box','Table Salt Pack','Green Tea Bags (20)'],
+    household:['Dish Soap 500ml','Laundry Detergent','Paper Towels (2pk)','Trash Bags (30ct)','Air Freshener Spray','Kitchen Sponges (3pk)','Glass Cleaner Spray','Toilet Paper (6pk)','Fabric Softener','Floor Cleaner 1L'],
+    personal:['Shampoo 400ml','Fluoride Toothpaste','Bar Soap 3-Pack','Body Wash 500ml','Deodorant Stick','Hand Sanitizer 100ml','Facial Cleanser','Disposable Razors (4pk)','Cotton Swabs (100ct)','Lip Balm Tube'],
+    electronics:['USB-C Cable 1m','Wall Phone Charger','Wired Earphones','Portable Power Bank','LED Bulb 9W','AA Batteries (4pk)','Extension Cord 3m','32GB Memory Card','Mini Bluetooth Speaker','Silicone Phone Case'],
+    stationery:['Ballpoint Pen (Blue)','Ruled Notebook A5','Sticky Notes Pack','Desktop Stapler','Highlighter Set (5)','Pencil Box (12)','Glue Stick','Office Scissors','Envelope Pack (20)','Marker Set (8)']
+  },
+  priceRange: {beverages:[0.99,3.49], snacks:[1.29,4.99], bakery:[1.49,5.49], dairy:[1.19,6.99], produce:[0.59,3.99], grocery:[1.99,12.99], household:[2.49,9.99], personal:[1.99,8.99], electronics:[3.99,24.99], stationery:[0.79,6.49]},
+  units: {beverages:'ea', snacks:'ea', bakery:'ea', dairy:'ea', produce:'kg', grocery:'ea', household:'ea', personal:'ea', electronics:'ea', stationery:'ea'},
+
+  generate(){
+    const products = []; let counter = 1;
+    for(const cat of this.categories){
+      const names = this.names[cat.id];
+      const [lo,hi] = this.priceRange[cat.id];
+      names.forEach((name, i)=>{
+        const price = Math.round((lo + Math.random()*(hi-lo))*100)/100;
+        const idNum = String(counter).padStart(3,'0');
+        products.push({
+          id: 'p'+idNum,
+          barcode: '2' + String(1000000000 + counter*97531 % 899999999).slice(0,11),
+          sku: cat.id.slice(0,3).toUpperCase()+'-'+idNum,
+          name, category: cat.id, price,
+          unit: this.units[cat.id],
+          emoji: cat.emoji, color: cat.color,
+          addedAt: Date.now() - (100-counter)*60000
+        });
+        counter++;
+      });
+    }
+    return products;
+  },
+  catInfo(id){ return this.categories.find(c=>c.id===id); },
+  placeholderSvg(cat){
+    const info = this.catInfo(cat) || {emoji:'📦', color:'475569'};
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='200' height='200' fill='#${info.color}'/><text x='50%' y='58%' font-size='84' text-anchor='middle'>${info.emoji}</text></svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+};
+
+/* ==========================================================================
+   MODULE: State
+   ========================================================================== */
+const State = {
+  products: [], sales: [], cart: [], // cart: [{productId, qty, discount, note}]
+  settings: { storeName:'D POS', currency:'$', taxRate:8, receiptWidth:'58mm' },
+  filters: { search:'', category:'all', sort:'recent' },
+  lastInvoiceNo: 1000,
+  pendingCheckout: { paymentMethod:'cash' }
+};
+
+/* ==========================================================================
+   MODULE: Cart logic
+   ========================================================================== */
+const Cart = {
+  add(productId, qty=1){
+    const existing = State.cart.find(c=>c.productId===productId);
+    if(existing){ existing.qty += qty; } else { State.cart.push({productId, qty, discount:0, note:''}); }
+    this.persist(); UI.renderCartBar(); UI.renderCartList(); SoundFX.addToCart();
+  },
+  setQty(productId, qty){
+    const item = State.cart.find(c=>c.productId===productId); if(!item) return;
+    item.qty = Utils.clamp(qty, 0, 9999);
+    if(item.qty<=0) this.remove(productId); else { this.persist(); UI.renderCartBar(); UI.renderCartList(); }
+  },
+  remove(productId){
+    State.cart = State.cart.filter(c=>c.productId!==productId);
+    this.persist(); UI.renderCartBar(); UI.renderCartList();
+  },
+  setDiscount(productId, val){
+    const item = State.cart.find(c=>c.productId===productId); if(!item) return;
+    item.discount = Utils.clamp(parseFloat(val)||0, 0, 100000);
+    this.persist(); UI.renderCartList();
+  },
+  setNote(productId, val){
+    const item = State.cart.find(c=>c.productId===productId); if(!item) return;
+    item.note = val; this.persist();
+  },
+  clear(){ State.cart = []; this.persist(); UI.renderCartBar(); UI.renderCartList(); },
+  lines(){
+    return State.cart.map(c=>{
+      const p = State.products.find(pp=>pp.id===c.productId);
+      if(!p) return null;
+      const lineSubtotal = p.price * c.qty;
+      const lineDiscount = Math.min(c.discount||0, lineSubtotal);
+      return { ...c, product:p, lineSubtotal, lineDiscount, lineTotal: lineSubtotal - lineDiscount };
+    }).filter(Boolean);
+  },
+  totals(){
+    const lines = this.lines();
+    const subtotal = lines.reduce((s,l)=>s+l.lineSubtotal,0);
+    const discount = lines.reduce((s,l)=>s+l.lineDiscount,0);
+    const taxable = subtotal - discount;
+    const tax = taxable * (State.settings.taxRate/100);
+    const total = taxable + tax;
+    return {subtotal, discount, tax, total, count: State.cart.reduce((s,c)=>s+c.qty,0)};
+  },
+  async persist(){ await DB.setMeta('cart', State.cart); }
+};
+
+/* ==========================================================================
+   MODULE: Scanner
+   ========================================================================== */
+const Scanner = {
+  stream:null, detector:null, loopId:null, active:false, scanned:[],
+  async open(){
+    const modal = document.getElementById('scanner-modal');
+    const statusEl = document.getElementById('scanner-status');
+    modal.classList.remove('hidden');
+    this.scanned = [];
+    this.renderScannedList();
+
+    // getUserMedia only works in a secure context (https:// or localhost). Opening
+    // this file directly (file://) or over plain http:// will silently block camera
+    // access even when the OS/browser has camera permission granted overall — this
+    // is the #1 cause of "permission granted but camera still won't open".
+    if(!window.isSecureContext){
+      statusEl.textContent = 'Camera needs HTTPS — open this app via a secure (https://) link, not as a local file';
+      Toast.show('Camera blocked: this page must be opened over https:// (or localhost) for the camera to work', 'error');
+      return;
+    }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      statusEl.textContent = 'This browser does not support camera scanning — use manual entry (⌨)';
+      Toast.show('Camera API unavailable in this browser — try manual entry', 'error');
+      return;
+    }
+
+    statusEl.textContent = 'Requesting camera access…';
+    try{
+      // Try the rear camera first; some devices/browsers reject an exact/ideal
+      // facingMode constraint (OverconstrainedError), so fall back to a plain
+      // video request rather than failing outright.
+      try{
+        this.stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ideal:'environment'} }, audio:false });
+      }catch(inner){
+        if(inner && (inner.name === 'OverconstrainedError' || inner.name === 'ConstraintNotSatisfiedError')){
+          this.stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+        } else { throw inner; }
+      }
+      const video = document.getElementById('scanner-video');
+      video.srcObject = this.stream; await video.play();
+      this.active = true;
+      if('BarcodeDetector' in window){
+        try{ this.detector = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']}); }
+        catch(e){ this.detector = new BarcodeDetector(); }
+        statusEl.textContent = 'Point camera at a barcode';
+        this.loopDetect(video);
+      } else {
+        statusEl.textContent = 'Live scanning unsupported on this browser — use manual entry (⌨)';
+      }
+    }catch(err){
+      const name = err && err.name;
+      let msg;
+      if(name === 'NotAllowedError' || name === 'PermissionDeniedError'){
+        msg = 'Camera permission was denied for this site — open your browser\'s site settings, allow Camera, then retry';
+      } else if(name === 'NotFoundError' || name === 'DevicesNotFoundError'){
+        msg = 'No camera found on this device';
+      } else if(name === 'NotReadableError' || name === 'TrackStartError'){
+        msg = 'Camera is busy in another app — close it and retry';
+      } else if(name === 'SecurityError'){
+        msg = 'Camera blocked by browser security settings (needs https://)';
+      } else {
+        msg = 'Could not access camera — tap ⌨ to enter the code manually';
+      }
+      statusEl.textContent = msg;
+      Toast.show(msg, 'error');
+    }
+  },
+  async loopDetect(video){
+    if(!this.active) return;
+    try{
+      const codes = await this.detector.detect(video);
+      if(codes && codes.length){
+        this.onDetected(codes[0].rawValue);
+        return; // stop loop after a hit; onDetected will close or resume
+      }
+    }catch(e){ /* transient decode errors are normal */ }
+    this.loopId = requestAnimationFrame(()=>this.loopDetect(video));
+  },
+  onDetected(code){
+    const product = State.products.find(p=>p.barcode===code || p.sku===code);
+    const flash = document.getElementById('scan-flash');
+    flash.classList.add('flash'); setTimeout(()=>flash.classList.remove('flash'), 380);
+    Utils.vibrate(60);
+    if(product){
+      SoundFX.scanSuccess();
+      Cart.add(product.id, 1);
+      const existing = this.scanned.find(s=>s.productId===product.id);
+      if(existing) existing.qty += 1; else this.scanned.unshift({productId:product.id, qty:1});
+      this.renderScannedList();
+      Toast.show(`${product.name} added`, 'success', '🛒');
+      document.getElementById('scanner-status').textContent = `Found: ${product.name}`;
+      setTimeout(()=>{ if(this.active){ document.getElementById('scanner-status').textContent='Point camera at a barcode'; this.loopDetect(document.getElementById('scanner-video')); } }, 900);
+    } else {
+      SoundFX.error();
+      document.getElementById('scanner-status').textContent = 'No product matches that code';
+      Toast.show('Barcode not found in catalog', 'error');
+      setTimeout(()=>{ if(this.active) this.loopDetect(document.getElementById('scanner-video')); }, 900);
+    }
+  },
+  renderScannedList(){
+    const list = document.getElementById('scanned-list');
+    if(!list) return;
+    if(this.scanned.length===0){
+      list.innerHTML = `<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:20px 0;">Items you scan will appear here</div>`;
+      return;
+    }
+    list.innerHTML = this.scanned.map(s=>{
+      const p = State.products.find(pp=>pp.id===s.productId);
+      if(!p) return '';
+      const info = Catalog.catInfo(p.category);
+      return `
+      <div class="scanned-card">
+        <div class="thumb-sm" style="background:#${info.color}22;">${info.emoji}</div>
+        <div class="sc-mid">
+          <p class="sc-name">${Utils.escapeHtml(p.name)}</p>
+          <div class="sc-sub">${Utils.money(p.price, State.settings.currency)}</div>
+        </div>
+        <div class="sc-qty">×${s.qty}</div>
+      </div>`;
+    }).join('');
+  },
+  close(){
+    this.active = false;
+    if(this.loopId) cancelAnimationFrame(this.loopId);
+    if(this.stream){ this.stream.getTracks().forEach(t=>t.stop()); this.stream=null; }
+    document.getElementById('scanner-modal').classList.add('hidden');
+  },
+  manualEntry(){
+    const code = prompt('Enter barcode or SKU manually:');
+    if(code) this.onDetected(code.trim());
+  }
+};
+
+/* ==========================================================================
+   MODULE: Receipt rendering
+   ========================================================================== */
+const Receipt = {
+  build(sale){
+    const s = State.settings;
+    const wrapClass = s.receiptWidth === '80mm' ? 'w80' : 'w58';
+    const linesHtml = sale.items.map(l=>`
+      <div class="line-item">
+        <div class="li-name">${Utils.escapeHtml(l.name)}</div>
+        <div class="li-cols">
+          <span class="li-qty">×${l.qty}</span>
+          <span class="li-price">${Utils.money(l.price, s.currency)}${l.discount?` (−${Utils.money(l.discount,s.currency)})`:''}</span>
+          <span class="li-total">${Utils.money(l.lineTotal, s.currency)}</span>
+        </div>
+      </div>`).join('');
+    return `
+      <div class="receipt-paper ${wrapClass}" id="the-receipt">
+        <div class="center store-name">${Utils.escapeHtml(s.storeName)}</div>
+        <div class="center thank-you" style="font-size:10.5px;color:#333;">Thank you for shopping with us</div>
+        <hr>
+        <div class="row"><span>Invoice</span><span>#${sale.invoiceNo}</span></div>
+        <div class="row"><span>Date / Time</span><span>${sale.dateStr}, ${sale.timeStr}</span></div>
+        ${sale.customerName ? `<div class="row"><span>Customer</span><span>${Utils.escapeHtml(sale.customerName)}</span></div>`:''}
+        <hr>
+        ${linesHtml}
+        <hr>
+        <div class="row"><span>Subtotal</span><span>${Utils.money(sale.subtotal, s.currency)}</span></div>
+        <div class="row"><span>Discount</span><span>−${Utils.money(sale.discount, s.currency)}</span></div>
+        <div class="row"><span>Tax (${s.taxRate}%)</span><span>${Utils.money(sale.tax, s.currency)}</span></div>
+        <div class="row" style="font-weight:700;font-size:13px;"><span>TOTAL</span><span>${Utils.money(sale.total, s.currency)}</span></div>
+        <hr>
+        <div class="row"><span>Payment</span><span>${Utils.escapeHtml(sale.paymentMethod)}</span></div>
+        <div class="row"><span>Amount Paid</span><span>${Utils.money(sale.amountPaid, s.currency)}</span></div>
+        <div class="row"><span>Change</span><span>${Utils.money(sale.change, s.currency)}</span></div>
+        ${sale.notes ? `<div style="margin-top:6px;font-size:10px;color:#555;">Note: ${Utils.escapeHtml(sale.notes)}</div>`:''}
+        <hr>
+        <div class="center" style="font-size:9px;color:#888;">D POS Technologies · 03286575000</div>
+      </div>`;
+  },
+  render(sale){
+    const area = document.getElementById('receipt-print-area');
+    area.innerHTML = this.build(sale);
+  }
+};
+
+/* ==========================================================================
+   MODULE: UI
+   ========================================================================== */
+const UI = {
+  el(id){ return document.getElementById(id); },
+
+  renderCategoryChips(){
+    const row = this.el('category-chips');
+    const chips = [{id:'all', label:'All', emoji:'🗂️'}, ...Catalog.categories];
+    row.innerHTML = chips.map(c=>`<button class="chip ${State.filters.category===c.id?'active':''}" data-cat="${c.id}">${c.emoji||''} ${c.label}</button>`).join('');
+    row.querySelectorAll('.chip').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ State.filters.category = btn.dataset.cat; this.renderCategoryChips(); this.renderProducts(); });
+    });
+  },
+
+  getFilteredProducts(){
+    let list = State.products.slice();
+    const {search, category, sort} = State.filters;
+    if(category!=='all') list = list.filter(p=>p.category===category);
+    if(search){
+      const q = search.toLowerCase();
+      list = list.filter(p =>
+        p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) ||
+        p.barcode.includes(q) || p.category.includes(q) || String(p.price).includes(q)
+      );
+    }
+    switch(sort){
+      case 'name': list.sort((a,b)=>a.name.localeCompare(b.name)); break;
+      case 'price_asc': list.sort((a,b)=>a.price-b.price); break;
+      case 'price_desc': list.sort((a,b)=>b.price-a.price); break;
+      default: list.sort((a,b)=>b.addedAt-a.addedAt);
+    }
+    return list;
+  },
+
+  renderProducts(){
+    const grid = this.el('product-grid');
+    const list = this.getFilteredProducts();
+    this.el('result-count').textContent = `${list.length} product${list.length!==1?'s':''}`;
+    this.el('empty-state').classList.toggle('hidden', list.length>0);
+    grid.innerHTML = list.map(p=>{
+      const info = Catalog.catInfo(p.category);
+      return `
+      <div class="product-card" data-id="${p.id}">
+        <div class="thumb" style="background:#${info.color}22;">${info.emoji}</div>
+        <div class="p-info">
+          <p class="p-name">${Utils.escapeHtml(p.name)}</p>
+          <p class="p-cat">${info.label} · ${p.sku}</p>
+        </div>
+        <div class="p-bottom">
+          <span class="p-price">${Utils.money(p.price, State.settings.currency)}</span>
+        </div>
+      </div>`;
+    }).join('');
+    // Tapping a product row adds it straight to the cart — no detail screen.
+    grid.querySelectorAll('.product-card').forEach(card=>{
+      card.addEventListener('click', ()=>{
+        const id = card.dataset.id;
+        const p = State.products.find(x=>x.id===id); if(!p) return;
+        Cart.add(id,1);
+        Toast.show(p.name+' added to cart','success','🛒');
+      });
+    });
+  },
+
+  renderCartBar(){
+    const t = Cart.totals();
+    const bar = this.el('cart-bar');
+    bar.classList.toggle('show', t.count>0);
+    this.el('cart-count').textContent = t.count;
+    this.el('cart-label').textContent = `${t.count} item${t.count!==1?'s':''}`;
+    this.el('cart-amount').textContent = Utils.money(t.total, State.settings.currency);
+  },
+
+  renderCartList(){
+    const list = this.el('cart-list');
+    const lines = Cart.lines();
+    if(lines.length===0){
+      list.innerHTML = `<div class="empty-state"><div class="emoji">🛒</div><div>Your cart is empty.<br>Tap a product or scan a barcode to add items.</div></div>`;
+    } else {
+      list.innerHTML = lines.map(l=>{
+        const info = Catalog.catInfo(l.product.category);
+        return `
+        <div class="cart-item" data-line="${l.productId}">
+          <div class="thumb-sm" style="background:#${info.color}22;">${info.emoji}</div>
+          <div class="ci-mid">
+            <p class="ci-name">${Utils.escapeHtml(l.product.name)}</p>
+            <div class="ci-price">${Utils.money(l.product.price, State.settings.currency)} / ${l.product.unit}</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" data-dec="${l.productId}">−</button>
+              <span class="qty-val">${l.qty}</span>
+              <button class="qty-btn" data-inc="${l.productId}">+</button>
+            </div>
+            <div class="ci-extra-row">
+              <label>Disc <input type="number" min="0" value="${l.discount||''}" placeholder="0" data-discount="${l.productId}"></label>
+              <label>Note <input type="text" value="${Utils.escapeHtml(l.note||'')}" placeholder="—" data-note="${l.productId}"></label>
+            </div>
+          </div>
+          <div class="ci-right">
+            <span class="ci-total">${Utils.money(l.lineTotal, State.settings.currency)}</span>
+            <button class="ci-remove" data-remove="${l.productId}">Remove</button>
+          </div>
+        </div>`;
+      }).join('');
+      list.querySelectorAll('[data-inc]').forEach(b=>b.addEventListener('click', ()=>{ const id=b.dataset.inc; const it=State.cart.find(c=>c.productId===id); Cart.setQty(id, it.qty+1); }));
+      list.querySelectorAll('[data-dec]').forEach(b=>b.addEventListener('click', ()=>{ const id=b.dataset.dec; const it=State.cart.find(c=>c.productId===id); Cart.setQty(id, it.qty-1); }));
+      list.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click', ()=> Cart.remove(b.dataset.remove)));
+      list.querySelectorAll('[data-discount]').forEach(inp=>inp.addEventListener('input', Utils.debounce(()=>Cart.setDiscount(inp.dataset.discount, inp.value),350)));
+      list.querySelectorAll('[data-note]').forEach(inp=>inp.addEventListener('input', Utils.debounce(()=>Cart.setNote(inp.dataset.note, inp.value),350)));
+    }
+    const t = Cart.totals();
+    this.el('sum-subtotal').textContent = Utils.money(t.subtotal, State.settings.currency);
+    this.el('sum-discount').textContent = '−'+Utils.money(t.discount, State.settings.currency);
+    this.el('sum-tax-pct').textContent = State.settings.taxRate;
+    this.el('sum-tax').textContent = Utils.money(t.tax, State.settings.currency);
+    this.el('sum-total').textContent = Utils.money(t.total, State.settings.currency);
+    this.el('btn-checkout').disabled = lines.length===0;
+  },
+
+  renderHistory(){
+    const list = this.el('history-list');
+    const sales = State.sales.slice().sort((a,b)=>b.createdAt-a.createdAt);
+    if(sales.length===0){
+      list.innerHTML = `<div class="empty-state"><div class="emoji">🧾</div><div>No sales yet. Completed sales appear here.</div></div>`;
+      return;
+    }
+    list.innerHTML = sales.map(s=>`
+      <div class="product-card" data-sale="${s.id}" style="display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:10px;cursor:pointer;">
+        <div class="thumb-sm" style="background:var(--accent-ink);color:var(--accent);width:44px;height:44px;font-size:18px;">🧾</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:13.5px;">Invoice #${s.invoiceNo}</div>
+          <div style="font-size:11.5px;color:var(--muted);">${s.dateStr} · ${s.timeStr} · ${s.paymentMethod}</div>
+        </div>
+        <div class="mono" style="font-weight:700;">${Utils.money(s.total, State.settings.currency)}</div>
+      </div>`).join('');
+    list.querySelectorAll('[data-sale]').forEach(card=>{
+      card.addEventListener('click', ()=>{
+        const sale = State.sales.find(s=>s.id===card.dataset.sale);
+        Receipt.render(sale); Modals.open('modal-receipt');
+      });
+    });
+  },
+
+  switchTab(tab){
+    ['home','history'].forEach(t=>{
+      this.el(t+'-view')?.classList.toggle('hidden', t!==tab);
+    });
+    document.querySelectorAll('.chips-row,.sort-row').forEach(el=> el.classList.toggle('hidden', tab!=='home'));
+    document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+    if(tab==='history') this.renderHistory();
+    if(tab==='settings') Sheets.open('sheet-settings');
+  }
+};
+
+/* ==========================================================================
+   MODULE: Sheets / Modals (shared overlay + focus handling)
+   ========================================================================== */
+const Sheets = {
+  overlay: null,
+  init(){ this.overlay = document.getElementById('overlay'); this.overlay.addEventListener('click', ()=> this.closeAll()); },
+  open(id){ this.overlay.classList.add('show'); document.getElementById(id).classList.add('show'); },
+  close(id){ document.getElementById(id).classList.remove('show'); this._maybeHideOverlay(); },
+  closeAll(){
+    document.querySelectorAll('.sheet.show').forEach(s=>s.classList.remove('show'));
+    document.querySelectorAll('.modal-center-wrap.show').forEach(m=>m.classList.remove('show'));
+    this.overlay.classList.remove('show');
+  },
+  _maybeHideOverlay(){
+    const anyOpen = document.querySelector('.sheet.show, .modal-center-wrap.show');
+    if(!anyOpen) this.overlay.classList.remove('show');
+  }
+};
+const Modals = {
+  open(id){ Sheets.overlay.classList.add('show'); document.getElementById(id).classList.add('show'); },
+  close(id){ document.getElementById(id).classList.remove('show'); Sheets._maybeHideOverlay(); }
+};
+
+/* ==========================================================================
+   MODULE: Checkout
+   ========================================================================== */
+const Checkout = {
+  paymentMethods: [
+    {id:'cash', label:'Cash', em:'💵'}, {id:'card', label:'Card', em:'💳'},
+    {id:'easypaisa', label:'EasyPaisa', em:'📲'}, {id:'jazzcash', label:'JazzCash', em:'📱'}
+  ],
+  renderPayGrid(){
+    const grid = this.el('pay-grid');
+    grid.innerHTML = this.paymentMethods.map(m=>`<div class="pay-opt ${State.pendingCheckout.paymentMethod===m.id?'active':''}" data-pay="${m.id}"><span class="em">${m.em}</span>${m.label}</div>`).join('');
+    grid.querySelectorAll('.pay-opt').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        State.pendingCheckout.paymentMethod = el.dataset.pay;
+        this.renderPayGrid();
+        this.el('cash-field').classList.toggle('hidden', el.dataset.pay!=='cash');
+        this.el('change-row').style.display = el.dataset.pay==='cash' ? 'flex' : 'none';
+        this.updateChange();
+      });
+    });
+  },
+  el(id){ return document.getElementById(id); },
+  open(){
+    const lines = Cart.lines();
+    if(lines.length===0){ Toast.show('Cart is empty', 'error'); return; }
+    const t = Cart.totals();
+    this.el('checkout-total').textContent = Utils.money(t.total, State.settings.currency);
+    this.el('cash-amount').value = '';
+    this.el('cust-name').value=''; this.el('cust-phone').value=''; this.el('order-notes').value='';
+    State.pendingCheckout.paymentMethod = 'cash';
+    this.renderPayGrid();
+    this.el('cash-field').classList.remove('hidden');
+    this.el('change-row').style.display='flex';
+    this.updateChange();
+    Sheets.close('sheet-cart');
+    Modals.open('modal-checkout');
+  },
+  updateChange(){
+    const t = Cart.totals();
+    const paid = parseFloat(this.el('cash-amount').value)||0;
+    const change = Math.max(0, paid - t.total);
+    this.el('change-val').textContent = Utils.money(change, State.settings.currency);
+  },
+  async complete(){
+    const lines = Cart.lines();
+    if(lines.length===0){ Toast.show('Cart is empty', 'error'); return; }
+    const t = Cart.totals();
+    const method = State.pendingCheckout.paymentMethod;
+    const paidInput = parseFloat(this.el('cash-amount').value)||0;
+    const amountPaid = method==='cash' ? (paidInput || t.total) : t.total;
+    const change = method==='cash' ? Math.max(0, amountPaid - t.total) : 0;
+    State.lastInvoiceNo += 1;
+    await DB.setMeta('lastInvoiceNo', State.lastInvoiceNo);
+    const sale = {
+      id: Utils.uid('sale'),
+      invoiceNo: State.lastInvoiceNo,
+      createdAt: Date.now(),
+      dateStr: Utils.todayStr(),
+      timeStr: Utils.timeStr(Date.now()),
+      customerName: this.el('cust-name').value.trim(),
+      customerPhone: this.el('cust-phone').value.trim(),
+      notes: this.el('order-notes').value.trim(),
+      items: lines.map(l=>({ productId:l.productId, name:l.product.name, qty:l.qty, price:l.product.price, discount:l.lineDiscount, lineTotal:l.lineTotal })),
+      subtotal: t.subtotal, discount: t.discount, tax: t.tax, total: t.total,
+      paymentMethod: this.paymentMethods.find(m=>m.id===method)?.label || method,
+      amountPaid, change
+    };
+    State.sales.push(sale);
+    await DB.put('sales', sale);
+    Cart.clear();
+    Modals.close('modal-checkout');
+    Receipt.render(sale);
+    Modals.open('modal-receipt');
+    SoundFX.success();
+    Toast.show('Sale completed successfully', 'success', '✅');
+    UI.renderProducts();
+  }
+};
+
+/* ==========================================================================
+   MODULE: Settings panel wiring
+   ========================================================================== */
+const SettingsUI = {
+  populate(){
+    const s = State.settings;
+    document.getElementById('set-store-name').value = s.storeName;
+    document.getElementById('set-currency').value = s.currency;
+    document.getElementById('set-tax').value = s.taxRate;
+    document.querySelectorAll('[data-width]').forEach(b=>b.classList.toggle('active', b.dataset.width===s.receiptWidth));
+    document.getElementById('store-name-label').textContent = s.storeName;
+    License.updateSettingsDisplay();
+  },
+  async save(partial){
+    Object.assign(State.settings, partial);
+    await DB.setMeta('settings', State.settings);
+    this.populate();
+    UI.renderCartList(); UI.renderCartBar(); UI.renderProducts();
+  }
+};
+
+/* ==========================================================================
+   BOOT
+   ========================================================================== */
+async function boot(){
+  await DB.init();
+  Toast.init();
+  Sheets.init();
+
+  // License gate — blocks here until a valid, non-expired license is active.
+  await License.gate();
+
+  // Load products from products.json (kept next to this HTML file) so the
+  // catalog never has to be duplicated into localStorage. Falls back to the
+  // built-in generator if the file can't be fetched (e.g. opened as a bare
+  // local file without a server, where relative fetch() is blocked).
+  let products = [];
+  try{
+    const res = await fetch('./products.json', {cache:'no-store'});
+    if(res.ok){
+      const data = await res.json();
+      if(Array.isArray(data) && data.length) products = data;
+    }
+  }catch(e){ /* fetch blocked (no server / CORS) — fall back below */ }
+  if(products.length===0){
+    products = Catalog.generate();
+    Toast.show('products.json not found — using built-in demo catalog', 'info');
+  }
+  State.products = products;
+
+  State.sales = await DB.getAll('sales');
+  State.cart = await DB.getMeta('cart', []);
+  const savedSettings = await DB.getMeta('settings', null);
+  if(savedSettings) Object.assign(State.settings, savedSettings);
+  State.lastInvoiceNo = await DB.getMeta('lastInvoiceNo', 1000);
+
+  UI.renderCategoryChips();
+  UI.renderProducts();
+  UI.renderCartBar();
+  UI.renderCartList();
+  SettingsUI.populate();
+
+  wireEvents();
+
+  // Attempt SW registration for installability (best-effort; see Settings > About)
+  registerServiceWorker();
+  setupManifest();
+  setupInstallPrompt();
+
+  if(!navigator.onLine) Toast.show('You are offline — app running from local data', 'offline');
+}
+
+function wireEvents(){
+  // Search
+  document.getElementById('search-input').addEventListener('input', Utils.debounce((e)=>{
+    State.filters.search = e.target.value.trim().toLowerCase();
+    UI.renderProducts();
+  }, 250));
+
+  document.getElementById('sort-select').addEventListener('change', (e)=>{ State.filters.sort = e.target.value; UI.renderProducts(); });
+
+  // Top icon buttons
+  document.getElementById('btn-settings-top').addEventListener('click', ()=> Sheets.open('sheet-settings'));
+
+  // Bottom nav
+  document.getElementById('nav-home').addEventListener('click', ()=> UI.switchTab('home'));
+  document.getElementById('nav-history').addEventListener('click', ()=> UI.switchTab('history'));
+  document.getElementById('nav-settings').addEventListener('click', ()=> Sheets.open('sheet-settings'));
+  document.getElementById('nav-scan').addEventListener('click', ()=> Scanner.open());
+
+  // Cart bar
+  document.getElementById('btn-open-cart').addEventListener('click', ()=> Sheets.open('sheet-cart'));
+
+  // Sheet/modal closers
+  document.querySelectorAll('[data-close-sheet]').forEach(b=>b.addEventListener('click', ()=> Sheets.close(b.dataset.closeSheet)));
+  document.querySelectorAll('[data-close-modal]').forEach(b=>b.addEventListener('click', ()=> Modals.close(b.dataset.closeModal)));
+
+  // Checkout
+  document.getElementById('btn-checkout').addEventListener('click', ()=> Checkout.open());
+  document.getElementById('cash-amount').addEventListener('input', ()=> Checkout.updateChange());
+  document.getElementById('btn-complete-sale').addEventListener('click', ()=> Checkout.complete());
+
+  // Receipt actions
+  document.getElementById('btn-print').addEventListener('click', ()=>{
+    const s = State.settings;
+    let styleTag = document.getElementById('print-size-style');
+    if(!styleTag){ styleTag = document.createElement('style'); styleTag.id='print-size-style'; document.head.appendChild(styleTag); }
+    styleTag.textContent = `@page{ size:${s.receiptWidth} auto; margin:2mm; }`;
+    window.print();
+    Toast.show('Sent to printer', 'print');
+  });
+  document.getElementById('btn-share').addEventListener('click', async ()=>{
+    const area = document.getElementById('the-receipt');
+    const text = area ? area.innerText : 'Receipt';
+    if(navigator.share){ try{ await navigator.share({ title:'Receipt', text }); }catch(e){} }
+    else { Toast.show('Sharing not supported — use Print instead', 'info'); }
+  });
+  document.getElementById('btn-pdf').addEventListener('click', ()=>{
+    Toast.show('Choose "Save as PDF" in the print dialog', 'info');
+    document.getElementById('btn-print').click();
+  });
+  document.getElementById('btn-new-sale').addEventListener('click', ()=>{ Modals.close('modal-receipt'); UI.switchTab('home'); });
+
+  // Scanner
+  document.getElementById('btn-scanner-close').addEventListener('click', ()=> Scanner.close());
+  document.getElementById('btn-scanner-manual').addEventListener('click', ()=> Scanner.manualEntry());
+
+  // Settings fields
+  document.getElementById('set-store-name').addEventListener('change', (e)=> SettingsUI.save({storeName:e.target.value||'D POS'}));
+  document.getElementById('set-currency').addEventListener('change', (e)=> SettingsUI.save({currency:e.target.value||'$'}));
+  document.getElementById('set-tax').addEventListener('change', (e)=> SettingsUI.save({taxRate: Utils.clamp(parseFloat(e.target.value)||0,0,100)}));
+  document.querySelectorAll('[data-width]').forEach(b=>b.addEventListener('click', ()=> SettingsUI.save({receiptWidth:b.dataset.width})));
+
+  // Backup / Restore / Clear
+  document.getElementById('btn-backup').addEventListener('click', async ()=>{
+    const payload = { products: State.products, sales: State.sales, settings: State.settings, cart: State.cart, lastInvoiceNo: State.lastInvoiceNo, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'ledger-pos-backup.json'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    Toast.show('Backup file downloaded', 'success');
+  });
+  document.getElementById('btn-restore').addEventListener('click', ()=> document.getElementById('restore-file').click());
+  document.getElementById('restore-file').addEventListener('change', async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    try{
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if(data.products){ State.products = data.products; }
+      if(data.sales){ State.sales = data.sales; await DB.bulkPut('sales', State.sales); }
+      if(data.settings){ Object.assign(State.settings, data.settings); await DB.setMeta('settings', State.settings); }
+      if(data.cart){ State.cart = data.cart; await Cart.persist(); }
+      if(data.lastInvoiceNo){ State.lastInvoiceNo = data.lastInvoiceNo; await DB.setMeta('lastInvoiceNo', State.lastInvoiceNo); }
+      UI.renderCategoryChips(); UI.renderProducts(); UI.renderCartBar(); UI.renderCartList(); SettingsUI.populate();
+      Toast.show('Data restored successfully', 'success');
+    }catch(err){ Toast.show('Invalid backup file', 'error'); }
+    e.target.value = '';
+  });
+  document.getElementById('btn-clear-sales').addEventListener('click', async ()=>{
+    if(!confirm('Clear all sales history? This cannot be undone.')) return;
+    State.sales = []; await DB.clear('sales'); UI.renderHistory(); Toast.show('Sales history cleared', 'success');
+  });
+  document.getElementById('btn-reset-app').addEventListener('click', async ()=>{
+    if(!confirm('This will erase ALL local data (products, sales, settings, cart, license). Continue?')) return;
+    await DB.clear('products'); await DB.clear('sales'); await DB.clear('meta');
+    localStorage.clear();
+    location.reload();
+  });
+
+  window.addEventListener('online', ()=> Toast.show('Back online', 'success', '📶'));
+  window.addEventListener('offline', ()=> Toast.show('You are offline — app keeps working', 'offline'));
+}
+
+/* ==========================================================================
+   PWA: manifest + service worker (best-effort, no external files needed)
+   ========================================================================== */
+function setupManifest(){
+  const iconSvg = (size)=> {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><rect width='${size}' height='${size}' rx='${size*0.22}' fill='%23F3F1EA'/><rect x='${size*0.18}' y='${size*0.18}' width='${size*0.64}' height='${size*0.64}' rx='${size*0.14}' fill='%2300A87E'/><text x='50%' y='62%' font-size='${size*0.34}' text-anchor='middle' font-family='sans-serif' font-weight='700' fill='%23EAFBF5'>D</text></svg>`;
+    return 'data:image/svg+xml,' + svg;
+  };
+  const manifest = {
+    name: State.settings.storeName || 'D POS',
+    short_name: 'D POS',
+    description: 'Offline-first mobile point of sale',
+    start_url: '.', display: 'standalone', orientation: 'portrait',
+    background_color: '#F3F1EA', theme_color: '#F3F1EA',
+    icons: [ {src: iconSvg(192), sizes:'192x192', type:'image/svg+xml'}, {src: iconSvg(512), sizes:'512x512', type:'image/svg+xml'} ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(blob));
+}
+
+function registerServiceWorker(){
+  if(!('serviceWorker' in navigator)) return;
+  // The entire app is inline in this single HTML file (no external CSS/JS/image
+  // requests), so there is nothing external that must be cache-pre-warmed for
+  // the app to keep functioning offline — IndexedDB already persists all data.
+  // Registering a Service Worker here is only attempted to satisfy PWA
+  // installability criteria on browsers/hosts that allow blob-based workers;
+  // if registration is rejected (many browsers block blob: script URLs for
+  // service workers, and file:// origins never support them), we fail silently
+  // and the app continues to work fully offline regardless.
+  const swSource = `
+    self.addEventListener('install', (e)=> self.skipWaiting());
+    self.addEventListener('activate', (e)=> self.clients.claim());
+    self.addEventListener('fetch', (e)=>{
+      e.respondWith(fetch(e.request).catch(()=> caches.match(e.request)));
+    });
+  `;
+  try{
+    const blob = new Blob([swSource], {type:'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url).catch(()=>{ /* expected on many hosts — see comment above */ });
+  }catch(e){ /* no-op */ }
+}
+
+function setupInstallPrompt(){
+  let deferredPrompt = null;
+  const banner = document.getElementById('install-banner');
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault(); deferredPrompt = e; banner.classList.add('show');
+  });
+  document.getElementById('btn-install').addEventListener('click', async ()=>{
+    if(!deferredPrompt) { Toast.show('Use your browser menu → Add to Home Screen', 'info'); return; }
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null; banner.classList.remove('show');
+  });
+  document.getElementById('btn-install-dismiss').addEventListener('click', ()=> banner.classList.remove('show'));
+}
+
+boot();
+})();
+</script>
+</body>
+</html>
